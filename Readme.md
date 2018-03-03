@@ -50,16 +50,16 @@
   Find Edges  
     - given a vertex, find all possible moves  
     - input: vertex  
-    - output: array of checked edges  
+    - output: array of edges  
   Check failure  
     - given a vertex, see if it results in failure  
     - input: vertex  
     - output: boolean  
   Check success  
-    - given a vertex, see if it matches the end goal  
+    - given a vertex, see if it matches the end goal (may or may not use, will start with get distance instead)  
     - input: vertex  
     - output: boolean  
-  Get weight  
+  Get distance  
     - given a vertex, see how close all items are from their destination (may or may not get used)  
     - input: Vertex  
     - output: integer  

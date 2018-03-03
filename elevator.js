@@ -1,52 +1,60 @@
-/*
-  STRUCTURE:
-  Vertex
-    - object
-      - key = item, value = floor
-      - include lowest ocupide floor (may or may not get used)
-  Edge
-    Edge.first
-      - start vertex
-    Edge.second
-      - end vertex
-    Edge.weight
-      - sum of the upward movement of all items (may or may not get used)
-  Graph
-    Verticies
-      - array of Vertices
-    Graph.edges
-      - array of Edges
-  Path
-    Path.edges
-      - array of Edges
-    Path.vertices
-      - array of vertices
-    Path.weight
-      - sum of the weights of all edges
-  Paths
-    - array of paths (ordered by size)
-  Failures
-    - array of vertices that are known to fail
+function Vertex() {
+  this.tg = null;
+  this.pg = null;
+  this.sg = null;
+  this.mg = null;
+  this.rg = null;
 
-  FUNCTIONS:
-  Find Edges
-    - given a vertex, find all possible moves
-    - input: vertex
-    - output: array of checked edges
-  Check failure
-    - given a vertex, see if it results in failure
-    - input: vertex
-    - output: boolean
-  Check sucess
-    - given a vertex, see if it matches the end goal
-    - input: vertex
-    - output: boolean
-  Check repeat
-    - given a vertex, see if it is already a part of this or another path
-    - input: vertex
-    - output: boolean
-  Pick next path
-    - after finishing work on a path, pick the next path to explore
-    - input: none
-    - output: index on paths
-*/
+  this.tm = null;
+  this.pm = null;
+  this.sm = null;
+  this.mm = null;
+  this.rm = null;
+
+  this.lowestFloor = null;
+  this.distance = null;
+}
+
+function Edge() {
+  this.first = null;
+  this.second = null;
+  this.weight = null;
+}
+
+function gameGraph() {
+  this.verticies = [];
+  this.edges = [];
+
+  this.paths = [];
+  this.failures = [];
+
+  this. minPath = function (start, end) {
+
+    return path;
+  }
+
+  this.findEdges = function (vertex) {
+
+    return edges;
+  }
+
+  this.checkFailure = function (vertex) {
+
+    return failed;
+  }
+
+  this.getDistance = function (vertex) {
+
+    return distance;
+  }
+
+  this.checkRepeat = function (vertex) {
+
+    return repeat;
+  }
+
+  this.nextPath = function () {
+
+    return path;
+  }
+}
