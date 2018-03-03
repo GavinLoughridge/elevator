@@ -36,8 +36,49 @@ function gameGraph() {
   this.paths = [];
 
   this.minPath = function (start, end) {
+    let firstPath = new Path;
+    firstPath.vertices.push(start);
+    firstPath.weight = this.getDistance(start);
+    this.vertices.push(start);
+    this.paths.push(firstPath);
 
-    return path;
+    let loopGuard = 0;
+    while(true) {
+      if (loopGuard > 1000) {
+        console.log('in a loop');
+        return null;
+      }
+      let path = this.nextPath;
+      let vertex = path.vertices[path.vertices.length - 1];
+      let edges = this.findEdges(vertex);
+      let nonRepeats = edges.filter(edge => this.checkRepeat(edge.second));
+      nonRepeats.forEach(edge => {
+        this.edges.push(edge);
+        this.verticies.push(edge.second);
+      })
+      let nonFails = nonRepeats.filter(edge => this.checkFailure(edge.second));
+      nonFails.forEach(edge => {
+        let newPath = JSON.parse(JSON.stringify(path));
+        newPath.edges.push(edge);
+        newPath.vertices.push(edge.second);
+        newPath.weight += edge.weight;
+        if (newPath.weight === 0) {
+          console.log('!! found shortest !!');
+          newPath.edges.forEach(edge => {
+            console.log('- move start -');
+            console.log(edge.first);
+            console.log('- move end -');
+            console.log(edge.second);
+          })
+          console.log('total moves:', newPath.edges.length);
+          return newPath.edges.length;
+        }
+        this.paths.push(newPath);
+      })
+    }
+
+    console.log('failed while condition before solution found');
+    return null;
   }
 
   this.findEdges = function (vertex) {
@@ -45,6 +86,26 @@ function gameGraph() {
     let items = ['tg', 'tc','pg', 'pc','sg', 'sc','mg', 'mc','rg', 'rc'];
     let movable = items.filter(item => vertex[item] === vertex.elevator);
     movable.forEach(item1 => {
+      if (vertex.elevator !== 3) {
+        let newVertex = JSON.parse(JSON.stringify(vertex));
+        newVertex.elevator = vertex.elevator + 1;
+        newVertex[item1] = vertex[item1] + 1;
+        edge.first = vertex;
+        edge.second = newVertex;
+        edge.weight = 1;
+        edges.push(edge);
+
+        movable.forEach(item2 => {
+          if (item1 !== item2) {
+            let newVertex = JSON.parse(JSON.stringify(newVertex));
+            newVertex[item2] = vertex[item2] + 1;
+            edge.first = vertex;
+            edge.second = newVertex;
+            edge.weight = 2;
+            edges.unshift(edge);
+          }
+        })
+      }
       if (vertex.elevator !== 0) {
         let newVertex = JSON.parse(JSON.stringify(vertex));
         newVertex.elevator = vertex.elevator - 1;
@@ -66,31 +127,7 @@ function gameGraph() {
           }
         })
       }
-      if (vertex.elevator !== 3) {
-        let newVertex = JSON.parse(JSON.stringify(vertex));
-        newVertex.elevator = vertex.elevator + 1;
-        newVertex[item1] = vertex[item1] + 1;
-        edge.first = vertex;
-        edge.second = newVertex;
-        edge.weight = 1;
-        edges.push(edge);
-
-        movable.forEach(item2 => {
-          if (item1 !== item2) {
-            let newVertex = JSON.parse(JSON.stringify(newVertex));
-            newVertex[item2] = vertex[item2] + 1;
-            edge.first = vertex;
-            edge.second = newVertex;
-            edge.weight = 2;
-            edges.push(edge);
-          }
-        })
-      }
-
-      return edges;
     })
-
-    if()
 
     return edges;
   }
@@ -158,6 +195,6 @@ function gameGraph() {
   }
 
   this.nextPath = function () {
-    return this.paths.pop();
+    return this.paths.shift();
   }
 }
