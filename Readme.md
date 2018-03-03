@@ -12,11 +12,11 @@
 ## DATA STRUCTURES:
   These are the general data structures I think I will need to solve this problem.
 
-  Vertex
-    - object
-      - key = item, value = floor
-      - include lowest occupied floor (may or may not get used)
-      - include distance of all items from their destination (may or may not get used)
+  Vertex  
+    - object  
+      - key = item, value = floor  
+      - include lowest occupied floor (may or may not get used)  
+      - include distance of all items from their destination (may or may not get used)  
   Edge
     Edge.first
       - start vertex
