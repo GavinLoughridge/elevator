@@ -25,7 +25,7 @@
     Edge.weight  
       - change in distance (may or may not get used)  
   Graph  
-    Graph.Verticies  
+    Graph.vertices  
       - array of Vertices  
     Graph.edges  
       - array of Edges  

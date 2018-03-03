@@ -29,8 +29,8 @@ function Path() {
   this.weight = null;
 }
 
-function gameGraph() {
-  this.verticies = [];
+function Graph() {
+  this.vertices = [];
   this.edges = [];
 
   this.paths = [];
@@ -38,23 +38,28 @@ function gameGraph() {
   this.minPath = function (start, end) {
     let firstPath = new Path;
     firstPath.vertices.push(start);
-    firstPath.weight = this.getDistance(start);
+    firstPath.weight = start.distance;
     this.vertices.push(start);
     this.paths.push(firstPath);
 
     let loopGuard = 0;
-    while(true) {
-      if (loopGuard > 1000) {
+    while(this.paths.length > 0) {
+      console.log('paths:', this.paths.length);
+      console.log('vertices:', this.vertices.length);
+      // loopGuard++;
+      if (loopGuard > 10000) {
         console.log('in a loop');
         return null;
       }
-      let path = this.nextPath;
+      let path = this.nextPath();
+      console.log('path length:', path.edges.length);
+      console.log('path weight:', path.weight);
       let vertex = path.vertices[path.vertices.length - 1];
       let edges = this.findEdges(vertex);
       let nonRepeats = edges.filter(edge => this.checkRepeat(edge.second));
       nonRepeats.forEach(edge => {
         this.edges.push(edge);
-        this.verticies.push(edge.second);
+        this.vertices.push(edge.second);
       })
       let nonFails = nonRepeats.filter(edge => this.checkFailure(edge.second));
       nonFails.forEach(edge => {
@@ -87,42 +92,49 @@ function gameGraph() {
     let movable = items.filter(item => vertex[item] === vertex.elevator);
     movable.forEach(item1 => {
       if (vertex.elevator !== 3) {
-        let newVertex = JSON.parse(JSON.stringify(vertex));
-        newVertex.elevator = vertex.elevator + 1;
-        newVertex[item1] = vertex[item1] + 1;
-        edge.first = vertex;
-        edge.second = newVertex;
-        edge.weight = 1;
-        edges.push(edge);
-
-        movable.forEach(item2 => {
-          if (item1 !== item2) {
-            let newVertex = JSON.parse(JSON.stringify(newVertex));
-            newVertex[item2] = vertex[item2] + 1;
-            edge.first = vertex;
-            edge.second = newVertex;
-            edge.weight = 2;
-            edges.unshift(edge);
-          }
-        })
-      }
-      if (vertex.elevator !== 0) {
-        let newVertex = JSON.parse(JSON.stringify(vertex));
-        newVertex.elevator = vertex.elevator - 1;
-        newVertex[item1] = vertex[item1] - 1;
+        let singleVertex = JSON.parse(JSON.stringify(vertex));
+        singleVertex.elevator = vertex.elevator + 1;
+        singleVertex[item1] = vertex[item1] + 1;
+        singleVertex.lowestFloor = this.getLowFloor(singleVertex);
         let edge = new Edge;
         edge.first = vertex;
-        edge.second = newVertex;
+        edge.second = singleVertex;
         edge.weight = -1;
         edges.push(edge);
 
         movable.forEach(item2 => {
           if (item1 !== item2) {
-            let newVertex = JSON.parse(JSON.stringify(newVertex));
-            newVertex[item2] = vertex[item2] - 1;
+            let doubleVertex = JSON.parse(JSON.stringify(singleVertex));
+            doubleVertex[item2] = vertex[item2] + 1;
+            doubleVertex.lowestFloor = this.getLowFloor(doubleVertex);
+            let edge = new Edge;
             edge.first = vertex;
-            edge.second = newVertex;
+            edge.second = doubleVertex;
             edge.weight = -2;
+            edges.unshift(edge);
+          }
+        })
+      }
+      if (vertex.elevator !== vertex.lowestFloor + 1) {
+        let singleVertex = JSON.parse(JSON.stringify(vertex));
+        singleVertex.elevator = vertex.elevator - 1;
+        singleVertex[item1] = vertex[item1] - 1;
+        singleVertex.lowestFloor = this.getLowFloor(singleVertex);
+        let edge = new Edge;
+        edge.first = vertex;
+        edge.second = singleVertex;
+        edge.weight = 1;
+        edges.push(edge);
+
+        movable.forEach(item2 => {
+          if (item1 !== item2) {
+            let doubleVertex = JSON.parse(JSON.stringify(singleVertex));
+            doubleVertex[item2] = vertex[item2] - 1;
+            doubleVertex.lowestFloor = this.getLowFloor(doubleVertex);
+            let edge = new Edge;
+            edge.first = vertex;
+            edge.second = doubleVertex;
+            edge.weight = 2;
             edges.push(edge);
           }
         })
@@ -130,6 +142,10 @@ function gameGraph() {
     })
 
     return edges;
+  }
+
+  this.getLowFloor = function (vertex) {
+    return Math.min(vertex.tc, vertex.tg, vertex.tc, vertex.pg, vertex.tc, vertex.sg, vertex.tc, vertex.mg, vertex.tc, vertex.rg) - 1;
   }
 
   this.checkFailure = function (vertex) {
@@ -179,7 +195,7 @@ function gameGraph() {
 
   this.checkRepeat = function (vertex) {
     return this.vertices.every(oldVertex => {
-      return vertex.distance !== oldvertex.distance ||
+      return vertex.distance !== oldVertex.distance ||
              vertex.elevator !== oldVertex.elevator ||
              vertex.tg !== oldVertex.tg ||
              vertex.pg !== oldVertex.pg ||
@@ -195,6 +211,58 @@ function gameGraph() {
   }
 
   this.nextPath = function () {
-    return this.paths.shift();
+    let minIndex = 0;
+
+    this.paths.forEach((path, index) => {
+      if (path.weight < this.paths[minIndex].weight) {
+        minIndex = index;
+      }
+    })
+
+    return this.paths.splice(minIndex, 1)[0];
   }
 }
+
+let gameGraph = new Graph;
+let initialState = new Vertex;
+initialState.tg = 0;
+initialState.pg = 0;
+initialState.sg = 0;
+initialState.mg = 3;
+initialState.rg = 3;
+
+initialState.tc = 0;
+initialState.pc = 2;
+initialState.sc = 2;
+initialState.mc = 3;
+initialState.rc = 3;
+
+initialState.lowestFloor = -1;
+initialState.elevator = 0;
+
+let endState = new Vertex;
+endState.tg = 4;
+endState.pg = 4;
+endState.sg = 4;
+endState.mg = 4;
+endState.rg = 4;
+
+endState.tc = 4;
+endState.pc = 4;
+endState.sc = 4;
+endState.mc = 4;
+endState.rc = 4;
+
+endState.lowestFloor = 3;
+endState.elevator = 4;
+
+
+initialState.distance = gameGraph.getDistance(initialState, endState);
+
+console.log('initial state is:', initialState);
+console.log('starting path finding');
+
+let minimumPathLength = gameGraph.minPath(initialState, endState);
+
+console.log('finished path finding');
+console.log('min path steps is:', minimumPathLength);
