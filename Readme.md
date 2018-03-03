@@ -10,65 +10,64 @@
   Below are the data structures and functions I'm planning to use.
 
 ## DATA STRUCTURES:
-  These are the general data structures I think I will need to solve this problem.
+  These are the general data structures I think I will need to solve this problem.  
 
   Vertex  
     - object  
       - key = item, value = floor  
       - include lowest occupied floor (may or may not get used)  
       - include distance of all items from their destination (may or may not get used)  
-  Edge
-    Edge.first
-      - start vertex
-    Edge.second
-      - end vertex
-    Edge.weight
-      - change in distance (may or may not get used)
-  Graph
-    Graph.Verticies
-      - array of Vertices
-    Graph.edges
-      - array of Edges
-  Path
-    Path.edges
-      - array of Edges
-    Path.vertices
-      - array of vertices
-    Path.weight
-      - sum of the weights of all edges
-  Paths
-    - array of paths (ordered by size)
-  Failures
-    - array of vertices that are known to fail
+  Edge  
+    Edge.first  
+      - start vertex  
+    Edge.second  
+      - end vertex  
+    Edge.weight  
+      - change in distance (may or may not get used)  
+  Graph  
+    Graph.Verticies  
+      - array of Vertices  
+    Graph.edges  
+      - array of Edges  
+  Path  
+    Path.edges  
+      - array of Edges  
+    Path.vertices  
+      - array of vertices  
+    Path.weight  
+      - sum of the weights of all edges  
+  Paths  
+    - array of paths (ordered by size)  
+  Failures  
+    - array of vertices that are known to fail  
 
-## FUNCTIONS:
-  These are the general functions I think I will need to solve this problem.
-  Find Min Path
-    - given a starting vertex, find the shortest path to the end vertex
-    - input: start vertex, end vertex
-    - output: Path
-  Find Edges
-    - given a vertex, find all possible moves
-    - input: vertex
-    - output: array of checked edges
-  Check failure
-    - given a vertex, see if it results in failure
-    - input: vertex
-    - output: boolean
-  Check success
-    - given a vertex, see if it matches the end goal
-    - input: vertex
-    - output: boolean
-  Get weight
-    - given a vertex, see how close all items are from their destination (may or may not get used)
-    - input: Vertex
-    - output: integer
-  Check repeat
-    - given a vertex, see if it is already a part of this or another path
-    - input: vertex
-    - output: boolean
-  Pick next path
-    - after finishing work on a path, pick the next path to explore
-    - input: none
-    - output: index on paths
-*/
+## FUNCTIONS:  
+  These are the general functions I think I will need to solve this problem.  
+  Find Min Path  
+    - given a starting vertex, find the shortest path to the end vertex  
+    - input: start vertex, end vertex  
+    - output: Path  
+  Find Edges  
+    - given a vertex, find all possible moves  
+    - input: vertex  
+    - output: array of checked edges  
+  Check failure  
+    - given a vertex, see if it results in failure  
+    - input: vertex  
+    - output: boolean  
+  Check success  
+    - given a vertex, see if it matches the end goal  
+    - input: vertex  
+    - output: boolean  
+  Get weight  
+    - given a vertex, see how close all items are from their destination (may or may not get used)  
+    - input: Vertex  
+    - output: integer  
+  Check repeat  
+    - given a vertex, see if it is already a part of this or another path  
+    - input: vertex  
+    - output: boolean  
+  Pick next path  
+    - after finishing work on a path, pick the next path to explore  
+    - input: none  
+    - output: index on paths  
