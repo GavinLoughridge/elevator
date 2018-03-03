@@ -5,11 +5,13 @@ function Vertex() {
   this.mg = null;
   this.rg = null;
 
-  this.tm = null;
-  this.pm = null;
-  this.sm = null;
-  this.mm = null;
-  this.rm = null;
+  this.tc = null;
+  this.pc = null;
+  this.sc = null;
+  this.mc = null;
+  this.rc = null;
+
+  this.elevator = null;
 
   this.lowestFloor = null;
   this.distance = null;
@@ -21,40 +23,141 @@ function Edge() {
   this.weight = null;
 }
 
+function Path() {
+  this.edges = [];
+  this.vertices = [];
+  this.weight = null;
+}
+
 function gameGraph() {
   this.verticies = [];
   this.edges = [];
 
   this.paths = [];
-  this.failures = [];
 
-  this. minPath = function (start, end) {
+  this.minPath = function (start, end) {
 
     return path;
   }
 
   this.findEdges = function (vertex) {
+    let edges = [];
+    let items = ['tg', 'tc','pg', 'pc','sg', 'sc','mg', 'mc','rg', 'rc'];
+    let movable = items.filter(item => vertex[item] === vertex.elevator);
+    movable.forEach(item1 => {
+      if (vertex.elevator !== 0) {
+        let newVertex = JSON.parse(JSON.stringify(vertex));
+        newVertex.elevator = vertex.elevator - 1;
+        newVertex[item1] = vertex[item1] - 1;
+        let edge = new Edge;
+        edge.first = vertex;
+        edge.second = newVertex;
+        edge.weight = -1;
+        edges.push(edge);
+
+        movable.forEach(item2 => {
+          if (item1 !== item2) {
+            let newVertex = JSON.parse(JSON.stringify(newVertex));
+            newVertex[item2] = vertex[item2] - 1;
+            edge.first = vertex;
+            edge.second = newVertex;
+            edge.weight = -2;
+            edges.push(edge);
+          }
+        })
+      }
+      if (vertex.elevator !== 3) {
+        let newVertex = JSON.parse(JSON.stringify(vertex));
+        newVertex.elevator = vertex.elevator + 1;
+        newVertex[item1] = vertex[item1] + 1;
+        edge.first = vertex;
+        edge.second = newVertex;
+        edge.weight = 1;
+        edges.push(edge);
+
+        movable.forEach(item2 => {
+          if (item1 !== item2) {
+            let newVertex = JSON.parse(JSON.stringify(newVertex));
+            newVertex[item2] = vertex[item2] + 1;
+            edge.first = vertex;
+            edge.second = newVertex;
+            edge.weight = 2;
+            edges.push(edge);
+          }
+        })
+      }
+
+      return edges;
+    })
+
+    if()
 
     return edges;
   }
 
   this.checkFailure = function (vertex) {
-
-    return failed;
+    return (vertex.tc === vertex.tg     ||
+           (vertex.tc !== vertex.pg     &&
+            vertex.tc !== vertex.sg     &&
+            vertex.tc !== vertex.mg     &&
+            vertex.tc !== vertex.rg))
+            &&
+           (vertex.pc === vertex.pg     ||
+           (vertex.pc !== vertex.tg     &&
+            vertex.pc !== vertex.sg     &&
+            vertex.pc !== vertex.mg     &&
+            vertex.pc !== vertex.rg))
+            &&
+           (vertex.sc === vertex.sg     ||
+           (vertex.sc !== vertex.pg     &&
+            vertex.sc !== vertex.tg     &&
+            vertex.sc !== vertex.mg     &&
+            vertex.sc !== vertex.rg))
+            &&
+           (vertex.mc === vertex.mg     ||
+           (vertex.mc !== vertex.pg     &&
+            vertex.mc !== vertex.tg     &&
+            vertex.mc !== vertex.sg     &&
+            vertex.mc !== vertex.rg))
+            &&
+           (vertex.rc === vertex.rg     ||
+           (vertex.rc !== vertex.pg     &&
+            vertex.rc !== vertex.tg     &&
+            vertex.rc !== vertex.sg     &&
+            vertex.rc !== vertex.mg))
   }
 
-  this.getDistance = function (vertex) {
-
-    return distance;
+  this.getDistance = function (vertex, end) {
+    return Math.abs(vertex.tg - end.tg) +
+           Math.abs(vertex.pg - end.pg) +
+           Math.abs(vertex.sg - end.sg) +
+           Math.abs(vertex.mg - end.mg) +
+           Math.abs(vertex.rg - end.rg) +
+           Math.abs(vertex.tc - end.tc) +
+           Math.abs(vertex.pc - end.pc) +
+           Math.abs(vertex.sc - end.sc) +
+           Math.abs(vertex.mc - end.mc) +
+           Math.abs(vertex.rc - end.rc);
   }
 
   this.checkRepeat = function (vertex) {
-
-    return repeat;
+    return this.vertices.every(oldVertex => {
+      return vertex.distance !== oldvertex.distance ||
+             vertex.elevator !== oldVertex.elevator ||
+             vertex.tg !== oldVertex.tg ||
+             vertex.pg !== oldVertex.pg ||
+             vertex.sg !== oldVertex.sg ||
+             vertex.mg !== oldVertex.mg ||
+             vertex.rg !== oldVertex.rg ||
+             vertex.tc !== oldVertex.tc ||
+             vertex.pc !== oldVertex.pc ||
+             vertex.sc !== oldVertex.sc ||
+             vertex.mc !== oldVertex.mc ||
+             vertex.rc !== oldVertex.rc;
+    })
   }
 
   this.nextPath = function () {
-
-    return path;
+    return this.paths.pop();
   }
 }
