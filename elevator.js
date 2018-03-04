@@ -12,71 +12,50 @@ function Vertex() {
   this.rc = null;
 
   this.elevator = null;
-
   this.lowestFloor = null;
-  this.distance = null;
-}
-
-function Edge() {
-  this.first = null;
-  this.second = null;
-  this.weight = null;
 }
 
 function Path() {
-  this.edges = [];
-  this.vertices = [];
+  this.steps = 0;
+  this.tail = null;
   this.weight = null;
 }
 
 function Graph() {
-  this.vertices = [];
-  this.edges = [];
+  this.vertices = {};
 
   this.paths = [];
 
   this.minPath = function (start, end) {
     let firstPath = new Path;
-    firstPath.vertices.push(start);
-    firstPath.weight = start.distance;
-    this.vertices.push(start);
+    firstPath.tail = start;
+    firstPath.weight = 20;
+    this.vertices[this.getHash(start)] = true;
     this.paths.push(firstPath);
 
-    let loopGuard = 0;
     while(this.paths.length > 0) {
+      let path = this.nextPath();
       console.log('paths:', this.paths.length);
       console.log('vertices:', this.vertices.length);
-      // loopGuard++;
-      if (loopGuard > 10000) {
-        console.log('in a loop');
-        return null;
-      }
-      let path = this.nextPath();
       console.log('path length:', path.edges.length);
       console.log('path weight:', path.weight);
-      let vertex = path.vertices[path.vertices.length - 1];
-      let edges = this.findEdges(vertex);
-      let nonRepeats = edges.filter(edge => this.checkRepeat(edge.second));
-      nonRepeats.forEach(edge => {
-        this.edges.push(edge);
-        this.vertices.push(edge.second);
+      let vertex = path.tail;
+      let steps = this.findSteps(vertex);
+      let nonRepeats = steps.filter(step => this.checkRepeat(step.vertex));
+      nonRepeats.forEach(step => {
+        this.vertices[this.getHash(step.vertex)] = true;
       })
-      let nonFails = nonRepeats.filter(edge => this.checkFailure(edge.second));
-      nonFails.forEach(edge => {
-        let newPath = JSON.parse(JSON.stringify(path));
-        newPath.edges.push(edge);
-        newPath.vertices.push(edge.second);
-        newPath.weight += edge.weight;
+      let nonFails = nonRepeats.filter(step => this.checkFailure(step.vertex));
+      nonFails.forEach(step => {
+        let newPath = new Path;
+        newPath.steps = path.steps + 1;
+        newPath.tail = step.vertex;
+        newPath.weight = path.weight + step.weight;
         if (newPath.weight === 0) {
           console.log('!! found shortest !!');
-          newPath.edges.forEach(edge => {
-            console.log('- move start -');
-            console.log(edge.first);
-            console.log('- move end -');
-            console.log(edge.second);
-          })
-          console.log('total moves:', newPath.edges.length);
-          return newPath.edges.length;
+          console.log('total moves:', newPath.steps);
+          console.log('full path:', newPath);
+          return newPath.steps;
         }
         this.paths.push(newPath);
       })
@@ -86,66 +65,79 @@ function Graph() {
     return null;
   }
 
+  this.floorMap = {
+    'a': {
+      'up': 'b',
+      'down': 'z'
+    },
+    'b': {
+      'up': 'c',
+      'down': 'a'
+    },
+    'c': {
+      'up': 'd',
+      'down': 'b'
+    },
+    'd': {
+      'down': 'c'
+    }
+  }
+
   this.findEdges = function (vertex) {
-    let edges = [];
+    let steps = [];
     let items = ['tg', 'tc','pg', 'pc','sg', 'sc','mg', 'mc','rg', 'rc'];
     let movable = items.filter(item => vertex[item] === vertex.elevator);
     movable.forEach(item1 => {
-      if (vertex.elevator !== 3) {
+      if (vertex.elevator !== 'd') {
         let singleVertex = JSON.parse(JSON.stringify(vertex));
-        singleVertex.elevator = vertex.elevator + 1;
-        singleVertex[item1] = vertex[item1] + 1;
+        singleVertex.elevator = this.floorMap[vertex.elevator]['up'];
+        singleVertex[item1] = singleVertex.elevator;
         singleVertex.lowestFloor = this.getLowFloor(singleVertex);
-        let edge = new Edge;
-        edge.first = vertex;
-        edge.second = singleVertex;
-        edge.weight = -1;
-        edges.push(edge);
+        steps.push({vertex: singleVertex, weight: -1});
 
         movable.forEach(item2 => {
           if (item1 !== item2) {
             let doubleVertex = JSON.parse(JSON.stringify(singleVertex));
-            doubleVertex[item2] = vertex[item2] + 1;
+            doubleVertex[item2] = doubleVertex.elevator;
             doubleVertex.lowestFloor = this.getLowFloor(doubleVertex);
-            let edge = new Edge;
-            edge.first = vertex;
-            edge.second = doubleVertex;
-            edge.weight = -2;
-            edges.unshift(edge);
+            steps.push({vertex: doubleVertex, weight: -2});
           }
         })
       }
-      if (vertex.elevator !== vertex.lowestFloor + 1) {
+      if (this.floorMap[vertex.elevator]['down'] !== vertex.lowestFloor) {
         let singleVertex = JSON.parse(JSON.stringify(vertex));
-        singleVertex.elevator = vertex.elevator - 1;
-        singleVertex[item1] = vertex[item1] - 1;
+        singleVertex.elevator = this.floorMap[vertex.elevator]['down'];
+        singleVertex[item1] = singleVertex.elevator;
         singleVertex.lowestFloor = this.getLowFloor(singleVertex);
-        let edge = new Edge;
-        edge.first = vertex;
-        edge.second = singleVertex;
-        edge.weight = 1;
-        edges.push(edge);
+        steps.push({vertex: singleVertex, weight: 1})
 
         movable.forEach(item2 => {
           if (item1 !== item2) {
             let doubleVertex = JSON.parse(JSON.stringify(singleVertex));
-            doubleVertex[item2] = vertex[item2] - 1;
+            doubleVertex[item2] = doubleVertex.elevator;
             doubleVertex.lowestFloor = this.getLowFloor(doubleVertex);
-            let edge = new Edge;
-            edge.first = vertex;
-            edge.second = doubleVertex;
-            edge.weight = 2;
-            edges.push(edge);
+            steps.push({vertex: doubleVertex, weight: 2})
           }
         })
       }
     })
 
-    return edges;
+    return steps;
   }
 
   this.getLowFloor = function (vertex) {
-    return Math.min(vertex.tc, vertex.tg, vertex.tc, vertex.pg, vertex.tc, vertex.sg, vertex.tc, vertex.mg, vertex.tc, vertex.rg) - 1;
+    let floors = [vertex.tc, vertex.tg, vertex.tc, vertex.pg, vertex.tc, vertex.sg, vertex.tc, vertex.mg, vertex.tc, vertex.rg];
+
+    if (floors.includes('a')) {
+      return 'z';
+    }
+    if (floors.includes('b')) {
+      return 'a';
+    }
+    if (floors.includes('c')) {
+      return 'b';
+    }
+    return 'c'
   }
 
   this.checkFailure = function (vertex) {
@@ -180,34 +172,35 @@ function Graph() {
             vertex.rc !== vertex.mg))
   }
 
-  this.getDistance = function (vertex, end) {
-    return Math.abs(vertex.tg - end.tg) +
-           Math.abs(vertex.pg - end.pg) +
-           Math.abs(vertex.sg - end.sg) +
-           Math.abs(vertex.mg - end.mg) +
-           Math.abs(vertex.rg - end.rg) +
-           Math.abs(vertex.tc - end.tc) +
-           Math.abs(vertex.pc - end.pc) +
-           Math.abs(vertex.sc - end.sc) +
-           Math.abs(vertex.mc - end.mc) +
-           Math.abs(vertex.rc - end.rc);
-  }
+  // this.getDistance = function (vertex, end) {
+  //   return Math.abs(vertex.tg - end.tg) +
+  //          Math.abs(vertex.pg - end.pg) +
+  //          Math.abs(vertex.sg - end.sg) +
+  //          Math.abs(vertex.mg - end.mg) +
+  //          Math.abs(vertex.rg - end.rg) +
+  //          Math.abs(vertex.tc - end.tc) +
+  //          Math.abs(vertex.pc - end.pc) +
+  //          Math.abs(vertex.sc - end.sc) +
+  //          Math.abs(vertex.mc - end.mc) +
+  //          Math.abs(vertex.rc - end.rc);
+  // }
 
   this.checkRepeat = function (vertex) {
-    return this.vertices.every(oldVertex => {
-      return vertex.distance !== oldVertex.distance ||
-             vertex.elevator !== oldVertex.elevator ||
-             vertex.tg !== oldVertex.tg ||
-             vertex.pg !== oldVertex.pg ||
-             vertex.sg !== oldVertex.sg ||
-             vertex.mg !== oldVertex.mg ||
-             vertex.rg !== oldVertex.rg ||
-             vertex.tc !== oldVertex.tc ||
-             vertex.pc !== oldVertex.pc ||
-             vertex.sc !== oldVertex.sc ||
-             vertex.mc !== oldVertex.mc ||
-             vertex.rc !== oldVertex.rc;
-    })
+    return this.vertices[this.getHash(vertex)];
+    // return this.vertices.every(oldVertex => {
+    //   return vertex.distance !== oldVertex.distance ||
+    //          vertex.elevator !== oldVertex.elevator ||
+    //          vertex.tg !== oldVertex.tg ||
+    //          vertex.pg !== oldVertex.pg ||
+    //          vertex.sg !== oldVertex.sg ||
+    //          vertex.mg !== oldVertex.mg ||
+    //          vertex.rg !== oldVertex.rg ||
+    //          vertex.tc !== oldVertex.tc ||
+    //          vertex.pc !== oldVertex.pc ||
+    //          vertex.sc !== oldVertex.sc ||
+    //          vertex.mc !== oldVertex.mc ||
+    //          vertex.rc !== oldVertex.rc;
+    // })
   }
 
   this.nextPath = function () {
@@ -221,48 +214,43 @@ function Graph() {
 
     return this.paths.splice(minIndex, 1)[0];
   }
+
+  this.getHash = function (vertex) {
+    return initialState.tg +
+           initialState.pg +
+           initialState.sg +
+           initialState.mg +
+           initialState.rg +
+           initialState.tc +
+           initialState.pc +
+           initialState.sc +
+           initialState.mc +
+           initialState.rc +
+           initialState.elevator;
+  }
 }
 
 let gameGraph = new Graph;
 let initialState = new Vertex;
-initialState.tg = 0;
-initialState.pg = 0;
-initialState.sg = 0;
-initialState.mg = 3;
-initialState.rg = 3;
+initialState.tg = 'a';
+initialState.pg = 'a';
+initialState.sg = 'a';
+initialState.mg = 'c';
+initialState.rg = 'c';
 
-initialState.tc = 0;
-initialState.pc = 2;
-initialState.sc = 2;
-initialState.mc = 3;
-initialState.rc = 3;
+initialState.tc = 'a';
+initialState.pc = 'b';
+initialState.sc = 'b';
+initialState.mc = 'c';
+initialState.rc = 'c';
 
-initialState.lowestFloor = -1;
-initialState.elevator = 0;
-
-let endState = new Vertex;
-endState.tg = 4;
-endState.pg = 4;
-endState.sg = 4;
-endState.mg = 4;
-endState.rg = 4;
-
-endState.tc = 4;
-endState.pc = 4;
-endState.sc = 4;
-endState.mc = 4;
-endState.rc = 4;
-
-endState.lowestFloor = 3;
-endState.elevator = 4;
-
-
-initialState.distance = gameGraph.getDistance(initialState, endState);
+initialState.lowestFloor = 'z';
+initialState.elevator = 'a';
 
 console.log('initial state is:', initialState);
 console.log('starting path finding');
 
-let minimumPathLength = gameGraph.minPath(initialState, endState);
+let minimumPathLength = gameGraph.minPath(initialState);
 
 console.log('finished path finding');
 console.log('min path steps is:', minimumPathLength);
