@@ -24,6 +24,8 @@ function Path() {
 function Graph() {
   this.vertices = {};
 
+  this.verticesCount = 0;
+
   this.paths = [];
 
   this.minPath = function (start, end) {
@@ -31,19 +33,23 @@ function Graph() {
     firstPath.tail = start;
     firstPath.weight = 20;
     this.vertices[this.getHash(start)] = true;
+    this.verticesCount++;
     this.paths.push(firstPath);
 
     while(this.paths.length > 0) {
       let path = this.nextPath();
-      console.log('paths:', this.paths.length);
-      console.log('vertices:', this.vertices.length);
-      console.log('path length:', path.edges.length);
-      console.log('path weight:', path.weight);
+      if (this.verticesCount % 1000 === 0) {
+        console.log('paths:', this.paths.length);
+        console.log('vertices:', this.verticesCount);
+        console.log('path length:', path.steps);
+        console.log('path weight:', path.weight);
+      }
       let vertex = path.tail;
       let steps = this.findSteps(vertex);
       let nonRepeats = steps.filter(step => this.checkRepeat(step.vertex));
       nonRepeats.forEach(step => {
         this.vertices[this.getHash(step.vertex)] = true;
+        this.verticesCount++;
       })
       let nonFails = nonRepeats.filter(step => this.checkFailure(step.vertex));
       nonFails.forEach(step => {
@@ -83,7 +89,7 @@ function Graph() {
     }
   }
 
-  this.findEdges = function (vertex) {
+  this.findSteps = function (vertex) {
     let steps = [];
     let items = ['tg', 'tc','pg', 'pc','sg', 'sc','mg', 'mc','rg', 'rc'];
     let movable = items.filter(item => vertex[item] === vertex.elevator);
@@ -186,7 +192,18 @@ function Graph() {
   // }
 
   this.checkRepeat = function (vertex) {
-    return this.vertices[this.getHash(vertex)];
+    return !this.vertices[this.getHash(vertex)];
+    // console.log('hash is:', this.getHash(vertex));
+    // let repete = this.vertices[this.getHash(vertex)];
+    // console.log('vertex in vertecies:', repete);
+    // console.log('vertex:', vertex);
+    // if (repete) {
+    //   console.log('repete');
+    //   return false;
+    // } else {
+    //   console.log('new');
+    //   return true;
+    // };
     // return this.vertices.every(oldVertex => {
     //   return vertex.distance !== oldVertex.distance ||
     //          vertex.elevator !== oldVertex.elevator ||
@@ -216,17 +233,17 @@ function Graph() {
   }
 
   this.getHash = function (vertex) {
-    return initialState.tg +
-           initialState.pg +
-           initialState.sg +
-           initialState.mg +
-           initialState.rg +
-           initialState.tc +
-           initialState.pc +
-           initialState.sc +
-           initialState.mc +
-           initialState.rc +
-           initialState.elevator;
+    return vertex.tg +
+           vertex.pg +
+           vertex.sg +
+           vertex.mg +
+           vertex.rg +
+           vertex.tc +
+           vertex.pc +
+           vertex.sc +
+           vertex.mc +
+           vertex.rc +
+           vertex.elevator;
   }
 }
 
