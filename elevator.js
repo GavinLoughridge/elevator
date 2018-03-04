@@ -17,6 +17,7 @@ function Vertex() {
 
 function Path() {
   this.steps = 0;
+  this.prev = [];
   this.tail = null;
   this.weight = null;
 }
@@ -31,12 +32,15 @@ function Graph() {
   this.minPath = function (start, end) {
     let firstPath = new Path;
     firstPath.tail = start;
+    firstPath.prev.push(start);
     firstPath.weight = 20;
     this.vertices[this.getHash(start)] = true;
     this.verticesCount++;
     this.paths.push(firstPath);
 
-    while(this.paths.length > 0) {
+    let solution = null;
+
+    while(this.paths.length > 0 && !solution) {
       let path = this.nextPath();
       if (this.verticesCount % 1000 === 0) {
         console.log('paths:', this.paths.length);
@@ -55,20 +59,23 @@ function Graph() {
       nonFails.forEach(step => {
         let newPath = new Path;
         newPath.steps = path.steps + 1;
+        newPath.prev = [...path.prev, step.vertex];
         newPath.tail = step.vertex;
         newPath.weight = path.weight + step.weight;
-        if (newPath.weight === 0) {
+        if (newPath.weight === 0 && !solution) {
           console.log('!! found shortest !!');
-          console.log('total moves:', newPath.steps);
-          console.log('full path:', newPath);
-          return newPath.steps;
+          solution = newPath;
         }
         this.paths.push(newPath);
       })
     }
 
-    console.log('failed while condition before solution found');
-    return null;
+    console.log('total moves:', solution.steps);
+    console.log('|tg|tc|pg|pc|sg|sc|mg|mc|rg|rc| e|');
+    solution.prev.forEach(v => {
+      console.log('| ' + v.tg + '| ' + v.tc + '| ' + v.pg + '| ' + v.pc + '| ' + v.sg + '| ' + v.sc + '| ' + v.mg + '| ' + v.mc + '| ' + v.rg + '| ' + v.rc + '| ' + v.elevator + '|');
+    })
+    return solution ? solution.steps : null;
   }
 
   this.floorMap = {
@@ -221,15 +228,16 @@ function Graph() {
   }
 
   this.nextPath = function () {
-    let minIndex = 0;
-
-    this.paths.forEach((path, index) => {
-      if (path.weight < this.paths[minIndex].weight) {
-        minIndex = index;
-      }
-    })
-
-    return this.paths.splice(minIndex, 1)[0];
+    // let minIndex = 0;
+    //
+    // this.paths.forEach((path, index) => {
+    //   if (path.weight < this.paths[minIndex].weight) {
+    //     minIndex = index;
+    //   }
+    // })
+    //
+    // return this.paths.splice(minIndex, 1)[0];
+    return this.paths.shift();
   }
 
   this.getHash = function (vertex) {
